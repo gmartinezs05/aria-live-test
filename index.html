@@ -1,0 +1,136 @@
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARIA Live Region Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: white;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .live-region {
+        border: 2px solid #ccc;
+        padding: 10px;
+        margin-top: 20px;
+      }
+      .live-region.aria-live-assertive {
+        border-color: red;
+      }
+      .live-region.aria-live-polite {
+        border-color: green;
+      }
+      .info {
+        margin-top: 20px;
+        font-size: 0.9em;
+        color: #555;
+      }
+      button {
+        font-size: 1.5em;
+        padding: 10px 20px;
+        border: 2px solid green;
+        background: white;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ARIA Live Region Test</h1>
+      <button onclick="updateLiveRegion()" autofocus>
+        Update Live Region, press ok to update
+      </button>
+
+      <div
+        id="assertive-region"
+        class="live-region aria-live-assertive"
+        aria-live="assertive"
+      >
+        Assertive live region:
+        <span id="assertive-content">Initial content</span>
+      </div>
+
+      <div class="info">
+        <h2>Browser-Specific Details</h2>
+        <p id="browser-info"></p>
+      </div>
+    </div>
+
+    <script>
+      function updateLiveRegion() {
+        const assertiveContent = document.getElementById("assertive-content");
+        const politeContent = document.getElementById("polite-content");
+
+        assertiveContent.textContent =
+          "Updated assertive content at " + new Date().toLocaleTimeString();
+        politeContent.textContent =
+          "Updated polite content at " + new Date().toLocaleTimeString();
+      }
+
+      function getBrowserInfo() {
+        const userAgent = navigator.userAgent;
+        let browserName = "Unknown";
+        let fullVersion = "Unknown";
+        let majorVersion = "Unknown";
+        let chromiumVersion = "Unknown";
+
+        if (userAgent.indexOf("Chrome") > -1) {
+          browserName = "Google Chrome";
+          fullVersion = userAgent.substring(userAgent.indexOf("Chrome") + 7);
+          if (fullVersion.indexOf(" ") > -1) {
+            fullVersion = fullVersion.substring(0, fullVersion.indexOf(" "));
+          }
+          majorVersion = fullVersion.split(".")[0];
+          chromiumVersion = fullVersion;
+        } else if (userAgent.indexOf("Safari") > -1) {
+          browserName = "Safari";
+          fullVersion = userAgent.substring(userAgent.indexOf("Version") + 8);
+          if (fullVersion.indexOf(" ") > -1) {
+            fullVersion = fullVersion.substring(0, fullVersion.indexOf(" "));
+          }
+          majorVersion = fullVersion.split(".")[0];
+        } else if (userAgent.indexOf("Firefox") > -1) {
+          browserName = "Mozilla Firefox";
+          fullVersion = userAgent.substring(userAgent.indexOf("Firefox") + 8);
+          majorVersion = fullVersion.split(".")[0];
+        } else if (
+          userAgent.indexOf("MSIE") > -1 ||
+          userAgent.indexOf("Trident") > -1
+        ) {
+          browserName = "Microsoft Internet Explorer";
+          fullVersion = userAgent.substring(userAgent.indexOf("MSIE") + 5);
+          if (fullVersion.indexOf(";") > -1) {
+            fullVersion = fullVersion.substring(0, fullVersion.indexOf(";"));
+          }
+          majorVersion = fullVersion.split(".")[0];
+        }
+
+        return {
+          browserName,
+          fullVersion,
+          majorVersion,
+          chromiumVersion,
+        };
+      }
+
+      function displayBrowserInfo() {
+        const info = getBrowserInfo();
+        const browserInfoElement = document.getElementById("browser-info");
+        const ariaLiveSupported = "ariaLive" in document.createElement("div");
+        browserInfoElement.innerHTML = `
+                <p><strong>Browser Name:</strong> ${info.browserName}</p>
+                                <p><strong>Major Version:</strong> ${info.majorVersion}</p>
+
+                <p><strong>Full Version:</strong> ${info.fullVersion}</p>
+            `;
+      }
+
+      document.addEventListener("DOMContentLoaded", displayBrowserInfo);
+    </script>
+  </body>
+</html>
