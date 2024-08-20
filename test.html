@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TV ARIA Attributes Test</title>
+
+    <style>
+      body {
+        font-size: 2em;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        height: 100vh;
+
+        background-color: #f0f0f0;
+
+        overflow: hidden; /* Make body unscrollable */
+      }
+
+      .test-element {
+        margin: 20px;
+
+        padding: 20px;
+
+        border: 2px solid #000;
+
+        width: 80%;
+
+        text-align: center;
+
+        position: relative;
+      }
+
+      .test-element .label {
+        position: absolute;
+
+        top: 10px;
+
+        left: 10px;
+
+        font-size: 0.5em;
+
+        font-weight: bold;
+      }
+
+      .focused {
+        border-width: 10px; /* Larger border for selected elements */
+
+        border-color: orange;
+      }
+
+      button.test-element {
+        background-color: green;
+
+        color: white;
+
+        border-radius: 10px;
+
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      button[aria-pressed="true"] {
+        background-color: green;
+      }
+
+      button[aria-pressed="false"] {
+        background-color: red;
+      }
+    </style>
+  </head>
+
+  <body>
+    <span
+      >In order to test aria-hidden, all boxes but the one with chrome version
+      should not speak the title in the left (for instance [Chromium
+      Version])</span
+    >
+
+    <div class="test-element" tabindex="0" aria-live="assertive">
+      <span aria-hidden="true" class="label">[aria-live]</span>
+
+      This is an assertive aria-live region. Press button to update
+    </div>
+
+    <button class="test-element" tabindex="0" aria-pressed="false">
+      <span aria-hidden="true" class="label">[button]</span>
+
+      Press me
+    </button>
+
+    <h2 class="test-element" tabindex="0" role="presentation">
+      role="presentation".
+    </h2>
+
+    <div class="test-element" tabindex="0" aria-describedby="desc">
+      <span aria-hidden="true" class="label">[aria-describedby]</span>
+
+      This element is described by another element.
+    </div>
+
+    <div id="desc" class="test-element" tabindex="0">
+      <span aria-hidden="true" class="label">[description]</span>
+
+      Description for the element above.
+    </div>
+
+    <script>
+      // Mapping of Chromium versions to platform versions
+
+      const versionMap = {
+        8.5: "m108",
+
+        "7.0": "m94",
+
+        6.5: "m85",
+
+        "6.0": "m76",
+
+        5.5: "m69",
+
+        "5.0": "m63",
+
+        "4.0": "m56",
+
+        "3.0": "m47",
+
+        2.4: "webkit r152340",
+
+        2.3: "webkit r152340",
+      };
+
+      // Tizen native API to get the browser's Chromium version
+
+      try {
+        var version = tizen.systeminfo.getCapability(
+          "http://tizen.org/feature/platform.version"
+        );
+
+        var platformVersion = versionMap[version] || "Unknown";
+
+        var versionElement = document.createElement("div");
+
+        versionElement.className = "test-element";
+
+        versionElement.innerHTML = `<span class="label">[Chromium Version]</span>Platform Version: ${version} (Chromium Version: ${platformVersion})`;
+
+        versionElement.tabIndex = 0;
+
+        document.body.appendChild(versionElement);
+      } catch (e) {
+        console.error("Error fetching Chromium version:", e);
+      }
+
+      // JavaScript to handle arrow key navigation and focus
+
+      const elements = document.querySelectorAll(".test-element");
+
+      let currentIndex = 0;
+
+      function updateFocus() {
+        elements.forEach((el, index) => {
+          if (index === currentIndex) {
+            el.classList.add("focused");
+
+            el.focus();
+          } else {
+            el.classList.remove("focused");
+          }
+        });
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowDown") {
+          currentIndex = (currentIndex + 1) % elements.length;
+
+          updateFocus();
+        } else if (event.key === "ArrowUp") {
+          currentIndex = (currentIndex - 1 + elements.length) % elements.length;
+
+          updateFocus();
+        }
+      });
+
+      // Initial focus
+
+      if (elements.length > 0) {
+        elements[currentIndex].classList.add("focused");
+
+        elements[currentIndex].focus();
+      }
+
+      // Update aria-live region with current time on button click and toggle button state
+
+      const button = document.querySelector("button[aria-pressed]");
+
+      const ariaLiveRegion = document.querySelector('[aria-live="assertive"]');
+
+      button.addEventListener("click", () => {
+        const currentTime = new Date().toLocaleTimeString();
+
+        ariaLiveRegion.textContent = `Current time is: ${currentTime}`;
+
+        const isPressed = button.getAttribute("aria-pressed") === "true";
+
+        button.setAttribute("aria-pressed", !isPressed);
+      });
+    </script>
+  </body>
+</html>
